@@ -4,7 +4,9 @@
         <http:listener-connection host="0.0.0.0" port="8081" />
     </http:listener-config>
     <apikit:config name="internalize-data-sapp-config" api="resource::61220300-a43f-4644-a91e-7dbdb4c089f0:internalize-data-sapp:1.0.1:raml:zip:internalize-data-sapp.raml" outboundHeadersMapName="outboundHeaders" httpStatusVarName="httpStatus" />
-    <flow name="internalize-data-sapp-main">
+    <http:request-config name="AuthService" doc:name="HTTP Request configuration" doc:id="e4cf37f2-f195-4fbc-90f3-d6906af4e740" />
+	<http:request-config name="InternalOmniAPI" doc:name="HTTP Request configuration" doc:id="6321d9fd-0f36-49ba-9731-9c0885962159" />
+	<flow name="internalize-data-sapp-main">
         <http:listener config-ref="internalize-data-sapp-httpListenerConfig" path="/api/*">
             <http:response statusCode="#[vars.httpStatus default 200]">
                 <http:headers>#[vars.outboundHeaders default {}]</http:headers>
@@ -141,6 +143,34 @@ output application/json
 		<set-payload value="#[payload]" doc:name="Set Payload" doc:id="d571317f-10a5-448e-be7a-fa3460c5e03e" />
     </flow>
     <flow name="post:\internalize\email:application\json:internalize-data-sapp-config">
-        <logger level="INFO" message="post:\internalize\email:application\json:internalize-data-sapp-config" />
+		<ee:transform doc:name="Transform Message" doc:id="425bf3ad-07aa-4857-8430-e2e31d6dd737" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/xml
+---
+caso: {
+	origem: payload.source,
+	assunto: payload.subject,
+	corpo: payload.body
+}
+]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<http:request method="GET" doc:name="Auth Request" doc:id="dc047f7e-c1d8-428b-b171-449acbdb596b" path="/token" config-ref="AuthService" target="token">
+			<http:headers ><![CDATA[#[output application/java
+---
+{
+	client_secret: attributes.headers.client_secret,
+	client_id : attributes.headers.client_id
+}]]]></http:headers>
+		</http:request>
+		<http:request method="POST" doc:name="Internalizar caso email" doc:id="8dc61e69-96e4-44ee-941e-e7d2e1869abf" path="/internalizar/caso-email" config-ref="InternalOmniAPI">
+			<http:headers ><![CDATA[#[output application/java
+---
+{
+	Authorization : vars.token
+}]]]></http:headers>
+		</http:request>
+		<logger level="INFO" message="post:\internalize\email:application\json:internalize-data-sapp-config" />
     </flow>
 </mule>
