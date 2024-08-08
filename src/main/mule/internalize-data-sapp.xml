@@ -184,6 +184,11 @@ output application/json
 }]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
+		<choice doc:name="Choice" doc:id="1375d731-c42f-4680-b065-9904cb922860" >
+			<when expression='#[payload.status == "nok"]'>
+				<raise-error doc:name="Raise error" doc:id="6e88cca1-6908-4e40-b497-9356dd155988" type="APIKIT:BAD_REQUEST"/>
+			</when>
+		</choice>
 		<logger level="INFO" message="post:\internalize\email:application\json:internalize-data-sapp-config" />
     </flow>
 </mule>
