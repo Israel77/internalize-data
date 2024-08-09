@@ -196,7 +196,7 @@ caso: {
 output application/json
 ---
 {
-	status: if (payload.mensagem.cod == 1) "ok" else "nok"
+	status: if (payload.mensagem.cod ~= 1) "ok" else "nok"
 }]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
