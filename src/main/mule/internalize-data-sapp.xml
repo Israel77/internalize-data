@@ -173,6 +173,9 @@ caso: {
 				<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="2d16ff32-1eff-42d5-8c7e-c2f9350a65d8" type="HTTP:CONNECTIVITY">
 					<set-payload value="Servidor de autenticação indisponível" doc:name="Set Payload" doc:id="5a94856c-0aff-40ec-9794-d52a0305c7e6" />
 				</on-error-propagate>
+				<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="5fea20f9-cade-4ce2-8d7f-7b57eb7397d1" type="ANY">
+					<set-payload value="Não foi possível realizar a autenticação do usuário." doc:name="Set Payload" doc:id="602eae86-e2bb-4e18-acea-d0e1241261b1" />
+				</on-error-propagate>
 			</error-handler>
 		</try>
 		<try doc:name="Try" doc:id="89a2165a-5d9e-46f4-bed7-974c3ce5dd30" >
@@ -187,6 +190,9 @@ caso: {
 			<error-handler >
 				<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="065777f3-1f3d-4e83-872b-01df168b81e0" type="HTTP:CONNECTIVITY">
 					<set-payload value="Servidor de internalização dos e-mails indisponível" doc:name="Set Payload" doc:id="2e7ab2ce-42a6-4e23-9c81-50719d81588f" />
+				</on-error-propagate>
+				<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="14e68898-dbec-46f2-8dd5-c8f1b7df9546" type="ANY" >
+					<set-payload value="Erro ao internalizar o e-mail." doc:name="Set Payload" doc:id="631b97b7-752d-445e-b6d5-4fe359237a2c" />
 				</on-error-propagate>
 			</error-handler>
 		</try>
