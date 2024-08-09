@@ -1,2 +1,4 @@
-auth_url: https://google.com
-internal_omni_url: https://google.com
+auth_url: dev.intranet.local.br
+auth_port: "8080"
+internal_omni_url: dev.intranet.local.br
+internal_omni_port: "8080"
