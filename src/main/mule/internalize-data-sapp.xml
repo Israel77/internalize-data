@@ -3,14 +3,14 @@
     <http:listener-config name="internalize-data-sapp-httpListenerConfig">
         <http:listener-connection host="0.0.0.0" port="8081" />
     </http:listener-config>
-    <apikit:config name="internalize-data-sapp-config" api="resource::61220300-a43f-4644-a91e-7dbdb4c089f0:internalize-data-sapp:1.0.1:raml:zip:internalize-data-sapp.raml" outboundHeadersMapName="outboundHeaders" httpStatusVarName="httpStatus" />
+    <apikit:config name="internalize-data-sapp-config" api="resource::61220300-a43f-4644-a91e-7dbdb4c089f0:internalize-data-sapp:1.0.2:raml:zip:internalize-data-sapp.raml" outboundHeadersMapName="outboundHeaders" httpStatusVarName="httpStatus" />
     <http:request-config name="AuthService" doc:name="HTTP Request configuration" doc:id="e4cf37f2-f195-4fbc-90f3-d6906af4e740">
-		<http:request-connection host="${auth_url}" port="${auth_port}"/>
-	</http:request-config>
-	<http:request-config name="InternalOmniAPI" doc:name="HTTP Request configuration" doc:id="6321d9fd-0f36-49ba-9731-9c0885962159">
-		<http:request-connection host="${internal_omni_url}" port="${internal_omni_port}"/>
-	</http:request-config>
-	<flow name="internalize-data-sapp-main">
+        <http:request-connection host="${auth_url}" port="${auth_port}" />
+    </http:request-config>
+    <http:request-config name="InternalOmniAPI" doc:name="HTTP Request configuration" doc:id="6321d9fd-0f36-49ba-9731-9c0885962159">
+        <http:request-connection host="${internal_omni_url}" port="${internal_omni_port}" />
+    </http:request-config>
+    <flow name="internalize-data-sapp-main">
         <http:listener config-ref="internalize-data-sapp-httpListenerConfig" path="/api/*">
             <http:response statusCode="#[vars.httpStatus default 200]">
                 <http:headers>#[vars.outboundHeaders default {}]</http:headers>
@@ -131,9 +131,9 @@ output application/json
     </flow>
     <flow name="get:\status:internalize-data-sapp-config">
         <logger level="INFO" message="get:\status:internalize-data-sapp-config" />
-		<ee:transform doc:name="Transform Message" doc:id="21f312ed-5a9f-417e-a3c4-713a8febec1f" >
-			<ee:message >
-				<ee:set-payload ><![CDATA[%dw 2.0
+        <ee:transform doc:name="Transform Message" doc:id="21f312ed-5a9f-417e-a3c4-713a8febec1f">
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
 output application/json
 ---
 {
@@ -142,69 +142,68 @@ output application/json
 	service_name: "Internalize Data SAPP",
 	subjacent_service: "Running"
 }]]></ee:set-payload>
-			</ee:message>
-		</ee:transform>
+            </ee:message>
+        </ee:transform>
     </flow>
     <flow name="post:\internalize\email:application\json:internalize-data-sapp-config">
-		<ee:transform doc:name="Transform Message" doc:id="425bf3ad-07aa-4857-8430-e2e31d6dd737" >
-			<ee:message >
-				<ee:set-payload ><![CDATA[%dw 2.0
+        <ee:transform doc:name="Transform Message" doc:id="425bf3ad-07aa-4857-8430-e2e31d6dd737">
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
 output application/xml
 ---
 caso: {
 	origem: payload.source,
 	assunto: payload.subject,
 	corpo: payload.body
-}
-]]></ee:set-payload>
-			</ee:message>
-		</ee:transform>
-		<set-variable value="#[payload]" doc:name="Salvar email em XML" doc:id="dc4c8fad-9286-4b52-86a1-a2ff8e6a48cb" variableName="emailXml"/>
-		<try doc:name="Try" doc:id="5633af42-479c-48ed-a608-156844539d52" >
-			<http:request method="GET" doc:name="Auth Request" doc:id="dc047f7e-c1d8-428b-b171-449acbdb596b" path="/token" config-ref="InternalOmniAPI" target="token">
-			<http:headers><![CDATA[#[output application/java
+}]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+        <set-variable value="#[payload]" doc:name="Salvar email em XML" doc:id="dc4c8fad-9286-4b52-86a1-a2ff8e6a48cb" variableName="emailXml" />
+        <try doc:name="Try" doc:id="5633af42-479c-48ed-a608-156844539d52">
+            <http:request method="GET" doc:name="Auth Request" doc:id="dc047f7e-c1d8-428b-b171-449acbdb596b" path="/token" config-ref="AuthService" target="token">
+                <http:headers><![CDATA[#[output application/java
 ---
 {
 	client_secret: attributes.headers.client_secret,
 	client_id : attributes.headers.client_id
 }]]]></http:headers>
-		</http:request>
-			<error-handler >
-				<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="2d16ff32-1eff-42d5-8c7e-c2f9350a65d8" type="HTTP:CONNECTIVITY">
-					<set-payload value="Servidor de autenticação indisponível" doc:name="Set Payload" doc:id="5a94856c-0aff-40ec-9794-d52a0305c7e6" />
-				</on-error-propagate>
-				<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="5fea20f9-cade-4ce2-8d7f-7b57eb7397d1" type="ANY">
-					<set-payload value="Não foi possível realizar a autenticação do usuário." doc:name="Set Payload" doc:id="602eae86-e2bb-4e18-acea-d0e1241261b1" />
-				</on-error-propagate>
-			</error-handler>
-		</try>
-		<try doc:name="Try" doc:id="89a2165a-5d9e-46f4-bed7-974c3ce5dd30" >
-			<http:request method="POST" doc:name="Internalizar caso email" doc:id="8dc61e69-96e4-44ee-941e-e7d2e1869abf" path="/internalizar/caso-email" config-ref="InternalOmniAPI">
-			<http:body><![CDATA[#[vars.emailXml]]]></http:body>
-			<http:headers><![CDATA[#[output application/java
+            </http:request>
+            <error-handler>
+                <on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="2d16ff32-1eff-42d5-8c7e-c2f9350a65d8" type="HTTP:CONNECTIVITY">
+                    <set-payload value="Servidor de autenticação indisponível" doc:name="Set Payload" doc:id="5a94856c-0aff-40ec-9794-d52a0305c7e6" />
+                </on-error-propagate>
+                <on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="5fea20f9-cade-4ce2-8d7f-7b57eb7397d1" type="ANY">
+                    <set-payload value="Não foi possível realizar a autenticação do usuário." doc:name="Set Payload" doc:id="602eae86-e2bb-4e18-acea-d0e1241261b1" />
+                </on-error-propagate>
+            </error-handler>
+        </try>
+        <try doc:name="Try" doc:id="89a2165a-5d9e-46f4-bed7-974c3ce5dd30">
+            <http:request method="POST" doc:name="Internalizar caso email" doc:id="8dc61e69-96e4-44ee-941e-e7d2e1869abf" path="/internalizar/caso-email" config-ref="InternalOmniAPI">
+                <http:body><![CDATA[#[vars.emailXml]]]></http:body>
+                <http:headers><![CDATA[#[output application/java
 ---
 {
 	Authorization : (vars.token as Object).token
 }]]]></http:headers>
-		</http:request>
-			<error-handler >
-				<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="065777f3-1f3d-4e83-872b-01df168b81e0" type="HTTP:CONNECTIVITY">
-					<set-payload value="Servidor de internalização dos e-mails indisponível" doc:name="Set Payload" doc:id="2e7ab2ce-42a6-4e23-9c81-50719d81588f" />
-				</on-error-propagate>
-				<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="14e68898-dbec-46f2-8dd5-c8f1b7df9546" type="ANY" >
-					<set-payload value="Erro ao internalizar o e-mail." doc:name="Set Payload" doc:id="631b97b7-752d-445e-b6d5-4fe359237a2c" />
-				</on-error-propagate>
-			</error-handler>
-		</try>
-		<ee:transform doc:name="Transform Message" doc:id="7f115600-970d-41a3-9f0e-911549dd307a" >
-			<ee:message >
-				<ee:set-payload ><![CDATA[%dw 2.0
+            </http:request>
+            <error-handler>
+                <on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="065777f3-1f3d-4e83-872b-01df168b81e0" type="HTTP:CONNECTIVITY">
+                    <set-payload value="Servidor de internalização dos e-mails indisponível" doc:name="Set Payload" doc:id="2e7ab2ce-42a6-4e23-9c81-50719d81588f" />
+                </on-error-propagate>
+                <on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="14e68898-dbec-46f2-8dd5-c8f1b7df9546" type="ANY">
+                    <set-payload value="Erro ao internalizar o e-mail." doc:name="Set Payload" doc:id="631b97b7-752d-445e-b6d5-4fe359237a2c" />
+                </on-error-propagate>
+            </error-handler>
+        </try>
+        <ee:transform doc:name="Transform Message" doc:id="7f115600-970d-41a3-9f0e-911549dd307a">
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
 output application/json
 ---
 {
 	status: if (payload.mensagem.cod ~= 1) "ok" else "nok"
 }]]></ee:set-payload>
-			</ee:message>
-		</ee:transform>
+            </ee:message>
+        </ee:transform>
     </flow>
 </mule>
