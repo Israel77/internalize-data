@@ -1,4 +1,4 @@
-auth_url: intern-omni-app-prd.us-e2.cloudhub.io
+auth_url: auth-app-prd.us-e2.cloudhub.io
 auth_port: "80"
 internal_omni_url: intern-omni-app-prd.us-e2.cloudhub.io
 internal_omni_port: "80"

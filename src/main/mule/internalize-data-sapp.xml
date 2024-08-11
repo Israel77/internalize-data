@@ -160,7 +160,7 @@ caso: {
         </ee:transform>
         <set-variable value="#[payload]" doc:name="Salvar email em XML" doc:id="dc4c8fad-9286-4b52-86a1-a2ff8e6a48cb" variableName="emailXml" />
         <try doc:name="Try" doc:id="5633af42-479c-48ed-a608-156844539d52">
-            <http:request method="GET" doc:name="Auth Request" doc:id="dc047f7e-c1d8-428b-b171-449acbdb596b" path="/token" config-ref="AuthService" target="token">
+            <http:request method="POST" doc:name="Auth Request" doc:id="dc047f7e-c1d8-428b-b171-449acbdb596b" path="/api/token" config-ref="AuthService" target="token">
                 <http:headers><![CDATA[#[output application/java
 ---
 {
